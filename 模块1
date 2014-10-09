@@ -1,0 +1,190 @@
+Public YesorNo, Table As Integer
+Public PayrollSlipSaveAsAddress As String '存放工资条地址变量,可供窗体模块使用
+
+
+
+
+Sub Macro2()
+'
+' Macro2 Macro
+'
+' 快捷键: Ctrl+h
+'
+
+    
+    Windows("starting.xlsm").Activate
+    Sheets("Sheet1").Select
+    Dim PayrollSlipTemplateAddress, PayrollSlipTemplateFileName As String
+    
+    '输入框的形式输入工资条模板地址
+    'PayrollSlipTemplateAddress = InputBox("请输入工资条模板地址和名称就像C:\Users\Administrator\Desktop\VBA Send Mail\Payroll Slip Template.xlsx", 工资条模板)
+    
+    
+    '从excel模板中取工资条模板地址
+    PayrollSlipTemplateAddress = Range("C1").Value
+    PayrollSlipTemplateFileName = Range("C2").Value
+    PayrollSlipSaveAsAddress = Range("C3").Value
+    Workbooks.Open (PayrollSlipTemplateAddress & "T-Payroll-Oupeng.xlsx")
+
+    
+    '选择starting.xlsm的sheet2
+    Windows("starting.xlsm").Activate
+    Sheets("Sheet2").Select
+    Dim i, endRowNo
+      
+        
+        
+    '取得starting.xlsm的sheet2工作表与Cells(1,1)相连的数据区行数
+    endRowNo = Cells(1, 1).CurrentRegion.Rows.Count
+    
+    '开始循环制作个人工资条,从第二行开始
+    For i = 2 To endRowNo
+
+    
+    '选中starting.xlsm的sheet2,并复制
+    Sheets("Sheet2").Select
+    Range("A" & i).Select
+    Selection.Copy
+    
+    '顺手把email地址拿出来,一会当文件名用
+    Dim StaffName, StaffEmail As String
+    StaffName = Range("A" & i).Value
+    StaffEmail = Range("B" & i).Value
+    
+    '打开工资条模板
+    Workbooks.Open (PayrollSlipTemplateAddress & PayrollSlipTemplateFileName)
+    Windows(PayrollSlipTemplateFileName).Activate
+    
+    '选中sheet1,粘贴员工姓名到工资条模板的工资姓名
+    
+    'Sheets("Sheet1").Select
+    'Range("C2").Select
+    'ActiveSheet.Paste
+    
+    
+    Worksheets("Sheet1").Range("C2").Value = StaffName
+    
+    Range("A1:AL13").Select
+    Range("C2").Activate
+    Application.CutCopyMode = False
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+    
+    Columns.AutoFit
+    '自动适应列宽
+    
+    
+    ChDir _
+    PayrollSlipTemplateAddress
+    
+    '不提示删除个人隐私信息
+    ActiveWorkbook.RemovePersonalInformation = False
+    
+    
+    
+    '另存为文件名为刚才取得的员工email地址
+    ActiveWorkbook.SaveAs Filename:= _
+    PayrollSlipSaveAsAddress & StaffEmail & ".xlsx" _
+    , FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+    ActiveWindow.Close
+    
+    
+    
+    'Workbooks.Open "C:\Users\Administrator\Desktop\VBA Send Mail\Payroll Slip Template.xlsx"
+    
+    Next i '以上工资条制作完毕
+    
+    
+    YesorNo = 0
+    Table = 0
+    UserForm1.Show 0
+    
+    
+    Table = 999
+    
+    
+    'Dim YesorNo
+    
+    
+    
+    'YesorNo = MsgBox("工资条已经制作完成,点击确定之前请核实工资条是否全部正确", vbOKCancel + vbQuestion + vbSystemModal)
+    'UserForm1.不对_Click
+    ''''''''
+    ''''''''    If YesorNo = 2 Then
+    ''''''''    Table = 0
+    ''''''''    MsgBox ("等于2么在模块中ＹｅｓｏｒＮｏ=" & YesorNo)
+    ''''''''
+    ''''''''    MsgBox ("Table is " & Table)
+    ''''''''    Workbooks("T-Payroll-Oupeng.xlsx").Close SaveChanges:=False
+    ''''''''    MsgBox ("别忘记删除" & PayrollSlipSaveAsAddress & "    里面的文件")
+    ''''''''
+    ''''''''
+    ''''''''
+    ''''''''    ElseIf YesorNo = 1 Then
+    ''''''''
+    ''''''''    MsgBox ("等于1么在模块中ＹｅｓｏｒＮｏ=" & YesorNo)
+    ''''''''
+    ''''''''    Table = 0
+    ''''''''
+    ''''''''
+    ''''''''
+    ''''''''
+    ''''''''
+    ''''''''    Windows("starting.xlsm").Activate
+    ''''''''
+    ''''''''
+    ''''''''     '要能正确发送并需要对Microseft　Outlook进行有效配置
+    ''''''''        On Error Resume Next
+    ''''''''        Dim SrowCount, SendRowNo
+    ''''''''        Dim objOutlook As New Outlook.Application
+    ''''''''        Dim objMail As MailItem
+    ''''''''
+    ''''''''        Sheets("Sheet2").Select
+    ''''''''
+    ''''''''        '取得当前工作表与Cells(1,1)相连的数据区行数
+    ''''''''        SendRowNo = Cells(1, 1).CurrentRegion.Rows.Count
+    ''''''''
+    ''''''''
+    ''''''''
+    ''''''''        '创建objOutlook为Outlook应用程序对象
+    ''''''''        Set objOutlook = New Outlook.Application
+    ''''''''
+    ''''''''        '开始循环发送电子邮件，比如从第二行开始，第一行是标题
+    ''''''''        For SrowCount = 2 To SendRowNo
+    ''''''''
+    ''''''''            '创建objMail为一个邮件对象
+    ''''''''            Set objMail = objOutlook.CreateItem(olMailItem)
+    ''''''''            With objMail
+    ''''''''
+    ''''''''            '设置收件人地址（比如从　Excel　表的第一列“E-mail地址”字段中获得）
+    ''''''''            .To = Cells(SrowCount, 2).Value     '"fantasia@sina.com"
+    ''''''''
+    ''''''''            '设置邮件主题（比如从　Excel　表的第二列“邮件主题”字段中获得）
+    ''''''''            .Subject = Cells(SrowCount, 3).Value     '"邮件主题"
+    ''''''''
+    ''''''''            '设置邮件内容（比如从　Excel　表的第三列“邮件内容”字段中获得）
+    ''''''''            .Body = Cells(SrowCount, 4).Value     '"邮件内容"
+    ''''''''
+    ''''''''            '设置附件（比如从　Excel　表的第四列“附件”字段中获得）
+    ''''''''            .Attachments.Add Cells(SrowCount, 5).Value    '"c:\\users.ctl"
+    ''''''''
+    ''''''''            .Send
+    ''''''''
+    ''''''''
+    ''''''''            End With
+    ''''''''
+    ''''''''            '销毁objMail对象
+    ''''''''            Set objMail = Nothing
+    ''''''''
+    ''''''''          Next
+    ''''''''
+    ''''''''          '销毁objOutlook对象
+    ''''''''          Set objOutlook = Nothing
+    ''''''''        MsgBox ("都发完了")
+    '                MsgBox ("马丹")
+    ''''''''        Else: MsgBox ("马丹")
+    ''''''''        End If
+    
+    
+    End Sub
