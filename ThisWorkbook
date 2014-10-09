@@ -1,0 +1,19 @@
+
+
+Private Sub Workbook_Deactivate()
+'Application.Windows.Arrange xlArrangeStyleTiled
+If Table = 999 Then
+UserForm1.Hide
+End If
+
+End Sub
+
+Private Sub Workbook_Activate()
+'Application.Windows.Arrange xlArrangeStyleTiled
+
+If Table = 999 Then
+UserForm1.Show 0
+
+End If
+End Sub
+
