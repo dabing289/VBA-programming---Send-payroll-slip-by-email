@@ -1,0 +1,99 @@
+Private Sub CommandButton1_Click()
+
+End Sub
+
+Private Sub Image1_Click()
+
+End Sub
+
+Private Sub Label1_Click()
+
+End Sub
+
+Private Sub UserForm_Click()
+
+End Sub
+
+Public Sub UserForm_Initialize()
+
+End Sub
+
+Public Sub 不对_Click()
+
+Me.Hide
+
+
+YesorNo = 2
+    Table = 0
+    
+
+    Workbooks("T-Payroll-Oupeng.xlsx").Close SaveChanges:=False
+    MsgBox ("别忘记删除" & PayrollSlipSaveAsAddress & "    里面的文件")
+
+
+
+
+End Sub
+
+Public Sub 确定_Click()
+Me.Hide
+
+YesorNo = 1
+Table = 0
+    
+    
+    Windows("starting.xlsm").Activate
+
+
+    '要能正确发送并需要对Microseft　Outlook进行有效配置
+    On Error Resume Next
+    Dim SrowCount, SendRowNo
+    Dim objOutlook As New Outlook.Application
+    Dim objMail As MailItem
+
+        Sheets("Sheet2").Select
+
+        '取得当前工作表与Cells(1,1)相连的数据区行数
+        SendRowNo = Cells(1, 1).CurrentRegion.Rows.Count
+
+
+
+        '创建objOutlook为Outlook应用程序对象
+        Set objOutlook = New Outlook.Application
+
+        '开始循环发送电子邮件，比如从第二行开始，第一行是标题
+        For SrowCount = 2 To SendRowNo
+
+            '创建objMail为一个邮件对象
+            Set objMail = objOutlook.CreateItem(olMailItem)
+            With objMail
+
+            '设置收件人地址（比如从　Excel　表的第一列“E-mail地址”字段中获得）
+            .To = Cells(SrowCount, 2).Value     '"fantasia@sina.com"
+
+            '设置邮件主题（比如从　Excel　表的第二列“邮件主题”字段中获得）
+            .Subject = Cells(SrowCount, 3).Value     '"邮件主题"
+
+            '设置邮件内容（比如从　Excel　表的第三列“邮件内容”字段中获得）
+            .Body = Cells(SrowCount, 4).Value     '"邮件内容"
+
+            '设置附件（比如从　Excel　表的第四列“附件”字段中获得）
+            .Attachments.Add Cells(SrowCount, 5).Value    '"c:\\users.ctl"
+
+            .Send
+
+
+            End With
+
+            '销毁objMail对象
+            Set objMail = Nothing
+
+          Next
+
+          '销毁objOutlook对象
+          Set objOutlook = Nothing
+        MsgBox ("都发完了")
+         Workbooks("T-Payroll-Oupeng.xlsx").Close SaveChanges:=False
+        
+        
+End Sub
